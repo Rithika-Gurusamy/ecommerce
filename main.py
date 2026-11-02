@@ -1,4 +1,14 @@
 from fastapi import FastAPI,HTTPException
+from pydantic import BaseModel
+
+
+orders = []
+order_id = 1
+
+class OrderCreate(BaseModel):
+    product_id: int
+    quantity: int
+
 
 app = FastAPI()
 
@@ -54,5 +64,35 @@ def get_product(product_id: int):
     for product in products:
         if product["product_id"] == product_id:
             return product
+
+    raise HTTPException(status_code=404, detail="Product not found")
+
+@app.post("/orders")
+def create_order(order: OrderCreate):
+    global order_id
+
+    if order.quantity <= 0:
+        raise HTTPException(status_code=400, detail="Quantity must be greater than zero")
+
+    for product in products:
+        if product["product_id"] == order.product_id:
+            if product["quantity"] < order.quantity:
+                raise HTTPException(status_code=400, detail="Not enough stock")
+
+            product["quantity"] -= order.quantity
+
+            order = {
+                "order_id": order_id,
+                "product_id": order.product_id,
+                "product_name": product["name"],
+                "quantity": order.quantity,
+                "total_price": product["price"] * order.quantity,
+                "status": "confirmed"
+            }
+
+            orders.append(order)
+            order_id += 1
+
+            return order
 
     raise HTTPException(status_code=404, detail="Product not found")
