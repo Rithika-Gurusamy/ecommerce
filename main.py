@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI,HTTPException
 
 app = FastAPI()
 
@@ -39,4 +39,20 @@ products = [
 "quantity": 12,
 "category": "Electronics"
 }
-]
+]                                     
+
+@app.get("/")
+def home():
+    return "hello"
+
+@app.get("/products")
+def get_products():
+    return products
+
+@app.get("/products/{product_id}")
+def get_product(product_id: int):
+    for product in products:
+        if product["product_id"] == product_id:
+            return product
+
+    raise HTTPException(status_code=404, detail="Product not found")
