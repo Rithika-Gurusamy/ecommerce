@@ -1,6 +1,9 @@
 from fastapi import FastAPI,HTTPException
 from pydantic import BaseModel
+from fastapi.staticfiles import StaticFiles
 
+app = FastAPI()
+app.mount("/images", StaticFiles(directory="images"), name="images")
 
 orders = []
 order_id = 1
@@ -19,37 +22,45 @@ products = [
 "name": "Wireless Mouse",
 "price": 799.00,
 "quantity": 20,
-"category": "Electronics"
+"category": "Electronics",
+"image_url":"/images/101.png"
+
 },
 {
 "product_id": 102,
 "name": "Mechanical Keyboard",
 "price": 1499.00,
 "quantity": 15,
-"category": "Electronics"
+"category": "Electronics",
+"image_url":"/images/102.png"
 },
 {
 "product_id": 103,
 "name": "USB-C Charger",
 "price": 599.00,
 "quantity": 30,
-"category": "Accessories"
+"category": "Accessories",
+"image_url":"/images/103.png"
 },
 {
 "product_id": 104,
 "name": "Laptop Stand",
 "price": 999.00,
 "quantity": 10,
-"category": "Accessories"
+"category": "Accessories",
+"image_url":"/images/104.png"
 },
 {
 "product_id": 105,
 "name": "Bluetooth Headphones",
 "price": 2499.00,
 "quantity": 12,
-"category": "Electronics"
+"category": "Electronics",
+"image_url":"/images/105.png"
 }
 ]                                     
+
+
 
 @app.get("/")
 def home():
