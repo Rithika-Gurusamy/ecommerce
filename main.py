@@ -96,3 +96,16 @@ def create_order(order: OrderCreate):
             return order
 
     raise HTTPException(status_code=404, detail="Product not found")
+    
+@app.get("/orders")
+def get_orders():
+    return orders
+
+
+@app.get("/orders/{order_id}")
+def get_order(order_id: int):
+    for order in orders:
+        if order["order_id"] == order_id:
+            return order
+
+    raise HTTPException(status_code=404, detail="Order not found")
