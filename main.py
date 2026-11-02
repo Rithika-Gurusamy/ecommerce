@@ -96,7 +96,7 @@ def create_order(order: OrderCreate):
             return order
 
     raise HTTPException(status_code=404, detail="Product not found")
-    
+
 @app.get("/orders")
 def get_orders():
     return orders
@@ -107,5 +107,24 @@ def get_order(order_id: int):
     for order in orders:
         if order["order_id"] == order_id:
             return order
+
+    raise HTTPException(status_code=404, detail="Order not found")
+
+@app.post("/orders/cancel/{order_id}")
+def cancel_order(order_id: int):
+    for order in orders:
+        if order["order_id"] == order_id:
+
+            if order["status"] == "cancelled":
+                raise HTTPException(
+                    status_code=400,
+                    detail="Order is already cancelled"
+                )
+
+            for product in products:
+                if product["product_id"] == order["product_id"]:
+                    product["quantity"] += order["quantity"]
+                    order["status"] = "cancelled"
+                    return order
 
     raise HTTPException(status_code=404, detail="Order not found")
