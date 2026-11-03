@@ -9,14 +9,12 @@ body {
     background-color: #f5f8ff;
 }
 
-/* Navigation */
 nav {
     background-color: #2563eb;
     color: white;
     padding: 20px 40px;
 }
 
-/* Main Container */
 .container {
     padding: 30px 40px;
 }
@@ -26,14 +24,12 @@ nav {
     margin-bottom: 25px;
 }
 
-/* Product Grid */
 .product-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 25px;
 }
 
-/* Product Card */
 .product-card {
     background-color: white;
     padding: 20px;
@@ -63,7 +59,6 @@ nav {
     color: #2563eb;
 }
 
-/* Buy Button */
 button {
     width: 100%;
     padding: 10px;
