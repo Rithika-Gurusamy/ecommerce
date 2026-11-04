@@ -22,7 +22,6 @@ class OrderCreate(BaseModel):
     quantity: int
 
 
-app = FastAPI()
 
 
 products = [
@@ -101,7 +100,7 @@ def create_order(order: OrderCreate):
 
             product["quantity"] -= order.quantity
 
-            order = {
+            new_order = {
                 "order_id": order_id,
                 "product_id": order.product_id,
                 "product_name": product["name"],
@@ -110,7 +109,7 @@ def create_order(order: OrderCreate):
                 "status": "confirmed"
             }
 
-            orders.append(order)
+            orders.append(new_order)
             order_id += 1
 
             return order
