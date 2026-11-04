@@ -1,8 +1,12 @@
 import sys
 import os
+from dotenv import load_dotenv
 
 # Ensure the project root is on sys.path so `agent` package is importable
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+# Load environment variables from .env file
+load_dotenv()
 
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles

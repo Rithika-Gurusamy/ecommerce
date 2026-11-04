@@ -7,6 +7,10 @@ Graph flow:
 """
 import os
 import json
+from dotenv import load_dotenv
+
+# Automatically load environment variables from .env
+load_dotenv()
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage, SystemMessage
