@@ -29,7 +29,7 @@ def _get_llm():
     if not api_key:
         raise ValueError("GOOGLE_API_KEY environment variable is not set.")
     llm = ChatGoogleGenerativeAI(
-        model="gemini-2.0-flash",
+        model="gemini-2.5-flash",
         google_api_key=api_key,
     )
     return llm.bind_tools(all_tools)
