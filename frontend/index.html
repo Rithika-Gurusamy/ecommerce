@@ -14,14 +14,23 @@
 
     <nav>
         <h2>My Store</h2>
+        <button id="toggle-orders-btn" onclick="toggleOrders()">My Orders</button>
     </nav>
 
     <main class="container">
 
-        <h2>Available Products</h2>
+        <section id="products-section">
+            <h2>Available Products</h2>
+            <div class="product-grid" id="product-container">
+            </div>
+        </section>
 
-        <div class="product-grid" id="product-container">
-        </div>
+        <section id="orders-section" class="hidden">
+            <h2>My Orders</h2>
+            <div id="orders-container">
+                <p class="empty-msg">No orders yet.</p>
+            </div>
+        </section>
 
     </main>
 

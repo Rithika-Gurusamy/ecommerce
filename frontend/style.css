@@ -13,6 +13,24 @@ nav {
     background-color: #2563eb;
     color: white;
     padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+nav button {
+    width: auto;
+    padding: 8px 20px;
+    background-color: white;
+    color: #2563eb;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+nav button:hover {
+    background-color: #dbeafe;
 }
 
 .container {
@@ -23,6 +41,8 @@ nav {
     color: #1e3a8a;
     margin-bottom: 25px;
 }
+
+/* ── Products ──────────────────────────────────── */
 
 .product-grid {
     display: grid;
@@ -56,7 +76,27 @@ nav {
 .price {
     font-size: 18px;
     font-weight: bold;
-    color: #2563eb;
+    color: #2563eb !important;
+}
+
+.qty-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 5px;
+}
+
+.qty-row label {
+    font-size: 14px;
+    color: #555;
+}
+
+.qty-row input {
+    width: 60px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    text-align: center;
 }
 
 button {
@@ -72,4 +112,127 @@ button {
 
 button:hover {
     background-color: #1d4ed8;
+}
+
+/* ── Orders ────────────────────────────────────── */
+
+#orders-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.order-card {
+    background-color: white;
+    padding: 20px;
+    border: 1px solid #dbeafe;
+    border-radius: 8px;
+}
+
+.order-card h3 {
+    color: #1e40af;
+    margin-bottom: 12px;
+}
+
+.order-card p {
+    margin-bottom: 6px;
+    color: #333;
+}
+
+.order-card.cancelled {
+    opacity: 0.6;
+    border-color: #fca5a5;
+}
+
+.cancel-btn {
+    background-color: #dc2626;
+    margin-top: 12px;
+}
+
+.cancel-btn:hover {
+    background-color: #b91c1c;
+}
+
+.cancelled-badge {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 6px 14px;
+    background-color: #fee2e2;
+    color: #dc2626;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.empty-msg {
+    color: #888;
+    font-style: italic;
+}
+
+/* ── Toggle visibility ─────────────────────────── */
+
+.hidden {
+    display: none;
+}
+
+
+/* ── Orders ────────────────────────────────────── */
+
+#orders-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.order-card {
+    background-color: white;
+    padding: 20px;
+    border: 1px solid #dbeafe;
+    border-radius: 8px;
+}
+
+.order-card h3 {
+    color: #1e40af;
+    margin-bottom: 12px;
+}
+
+.order-card p {
+    margin-bottom: 6px;
+    color: #333;
+}
+
+.order-card.cancelled {
+    opacity: 0.6;
+    border-color: #fca5a5;
+}
+
+.cancel-btn {
+    background-color: #dc2626;
+    margin-top: 12px;
+}
+
+.cancel-btn:hover {
+    background-color: #b91c1c;
+}
+
+.cancelled-badge {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 6px 14px;
+    background-color: #fee2e2;
+    color: #dc2626;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.empty-msg {
+    color: #888;
+    font-style: italic;
+}
+
+/* ── Toggle visibility ─────────────────────────── */
+
+.hidden {
+    display: none;
 }
