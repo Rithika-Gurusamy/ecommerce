@@ -209,25 +209,6 @@ function hideTyping() {
     if (el) el.remove();
 }
 
-// ── Show / hide the order confirmation bar ──────────────────────
-function showConfirmBar(pendingOrder) {
-    const bar = document.getElementById("chat-confirm-bar");
-    if (pendingOrder) {
-        bar.querySelector("p").textContent =
-            `Confirm: ${pendingOrder.product_name} × ${pendingOrder.quantity} = ₹${pendingOrder.total_price}?`;
-    }
-    bar.classList.remove("hidden");
-    // Disable text input while confirming
-    document.getElementById("chat-input").disabled = true;
-    document.getElementById("chat-send-btn").disabled = true;
-}
-
-function hideConfirmBar() {
-    document.getElementById("chat-confirm-bar").classList.add("hidden");
-    document.getElementById("chat-input").disabled = false;
-    document.getElementById("chat-send-btn").disabled = false;
-}
-
 // ── Send user message to agent ──────────────────────────────────
 async function sendMessage() {
     const input = document.getElementById("chat-input");
@@ -260,81 +241,14 @@ async function sendMessage() {
         // Show the agent's response
         addMessage(data.response, "bot");
 
-        // If the agent is asking for order confirmation, show the confirm bar
-        if (data.action === "confirm_order" && data.pending_order) {
-            showConfirmBar(data.pending_order);
-        }
-
-    } catch (err) {
-        hideTyping();
-        console.error("Chat error:", err);
-        addMessage("⚠️ Could not reach the assistant. Is the server running?", "bot");
-    }
-}
-
-// ── Confirm a pending order ─────────────────────────────────────
-async function confirmOrder() {
-    hideConfirmBar();
-    addMessage("✅ Yes, confirm the order!", "user");
-    showTyping();
-
-    try {
-        const response = await fetch(`${API}/agent/confirm`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ session_id: SESSION_ID })
-        });
-
-        hideTyping();
-
-        if (!response.ok) {
-            const err = await response.json();
-            addMessage(`⚠️ Error: ${err.detail || "Confirmation failed."}`, "bot");
-            return;
-        }
-
-        const data = await response.json();
-        addMessage(data.response, "bot");
-
-        // Refresh products & orders since stock changed
+        // Immediately refresh products (stock) and orders (order list)
         getProducts();
         loadOrders();
 
     } catch (err) {
         hideTyping();
-        console.error("Confirm error:", err);
-        addMessage("⚠️ Could not confirm the order.", "bot");
-    }
-}
-
-// ── Cancel a pending agent order ────────────────────────────────
-async function cancelAgentOrder() {
-    hideConfirmBar();
-    addMessage("❌ No, cancel it.", "user");
-    showTyping();
-
-    try {
-        const response = await fetch(`${API}/agent/cancel`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ session_id: SESSION_ID })
-        });
-
-        hideTyping();
-
-        if (!response.ok) {
-            const err = await response.json();
-            addMessage(`⚠️ Error: ${err.detail || "Cancellation failed."}`, "bot");
-            return;
-        }
-
-        const data = await response.json();
-        addMessage(data.response, "bot");
-
-    } catch (err) {
-        hideTyping();
-        console.error("Cancel error:", err);
-        addMessage("⚠️ Could not cancel the order.", "bot");
+        console.error("Chat error:", err);
+        addMessage("⚠️ Could not reach the assistant. Is the server running?", "bot");
     }
 }
 

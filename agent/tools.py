@@ -57,25 +57,23 @@ def get_product_info(query: str) -> str:
 
 
 @tool
-def prepare_order(product_name: str, quantity: int = 1) -> str:
-    """Prepare a pending order for a product. This does NOT finalize the order —
-    the user must confirm it first.
+def create_order(product_name: str, quantity: int = 1) -> str:
+    """Create and place an order directly for a product.
 
-    Use this tool when the user wants to buy/order a product.
+    Use this tool when the user wants to buy or order a product.
 
     Args:
         product_name: The name (or partial name) of the product to order.
         quantity: How many units to order. Defaults to 1.
     """
-    products = _get_products_ref()
+    import main
 
     if quantity <= 0:
         return "Error: Quantity must be at least 1."
 
-    # Find the product by fuzzy name match
     name_lower = product_name.strip().lower()
     matched_product = None
-    for p in products:
+    for p in main.products:
         if name_lower in p["name"].lower():
             matched_product = p
             break
@@ -89,27 +87,30 @@ def prepare_order(product_name: str, quantity: int = 1) -> str:
             f"Requested: {quantity}, Available: {matched_product['quantity']}."
         )
 
-    # Build the pending order (NOT yet placed)
+    # Deduct stock and place order
+    matched_product["quantity"] -= quantity
     total_price = matched_product["price"] * quantity
-    pending = {
+
+    new_order = {
+        "order_id": main.order_id,
         "product_id": matched_product["product_id"],
         "product_name": matched_product["name"],
         "quantity": quantity,
-        "unit_price": matched_product["price"],
         "total_price": total_price,
+        "status": "confirmed",
     }
+    main.orders.append(new_order)
+    main.order_id += 1
 
-    # Return a structured string — the graph node will parse this and set pending_order
     return (
-        f"PENDING_ORDER|"
-        f"{pending['product_id']}|"
-        f"{pending['product_name']}|"
-        f"{pending['quantity']}|"
-        f"{pending['unit_price']}|"
-        f"{pending['total_price']}"
+        f"Order successfully created and placed!\n"
+        f"Order ID: #{new_order['order_id']}\n"
+        f"Product: {new_order['product_name']}\n"
+        f"Quantity: {new_order['quantity']}\n"
+        f"Total Price: ₹{new_order['total_price']}\n"
+        f"Status: Confirmed"
     )
 
 
 # All tools available to the agent
-all_tools = [get_product_info, prepare_order]
-
+all_tools = [get_product_info, create_order]

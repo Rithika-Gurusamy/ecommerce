@@ -68,15 +68,6 @@
             <!-- Welcome message injected by JS -->
         </div>
 
-        <!-- Confirmation bar (hidden by default) -->
-        <div id="chat-confirm-bar" class="hidden">
-            <p>Confirm this order?</p>
-            <div class="confirm-actions">
-                <button class="confirm-yes" onclick="confirmOrder()">✅ Confirm</button>
-                <button class="confirm-no" onclick="cancelAgentOrder()">❌ Cancel</button>
-            </div>
-        </div>
-
         <div id="chat-input-bar">
             <input type="text" id="chat-input" placeholder="Ask me anything..."
                 autocomplete="off" onkeydown="if(event.key==='Enter') sendMessage()">
