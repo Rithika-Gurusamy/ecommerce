@@ -1,6 +1,9 @@
 const API = "http://127.0.0.1:8000";
 
-// ── Load & render products ──────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+//  PRODUCT & ORDER LOGIC (existing)
+// ═══════════════════════════════════════════════════════════════════
+
 async function getProducts() {
     try {
         const response = await fetch(`${API}/products`);
@@ -33,7 +36,6 @@ async function getProducts() {
     }
 }
 
-// ── Place an order (POST /orders) ───────────────────────────────
 async function buyProduct(productId) {
     const qtyInput = document.getElementById(`qty-${productId}`);
     const quantity = parseInt(qtyInput.value);
@@ -59,7 +61,6 @@ async function buyProduct(productId) {
         const order = await response.json();
         alert(`✅ Order #${order.order_id} confirmed!\n${order.product_name} × ${order.quantity} = ₹${order.total_price}`);
 
-        // Refresh products (stock changed) and orders
         getProducts();
         loadOrders();
     } catch (err) {
@@ -68,7 +69,6 @@ async function buyProduct(productId) {
     }
 }
 
-// ── Load & render orders (GET /orders) ──────────────────────────
 async function loadOrders() {
     try {
         const response = await fetch(`${API}/orders`);
@@ -106,7 +106,6 @@ async function loadOrders() {
     }
 }
 
-// ── Cancel an order (POST /orders/cancel/{id}) ──────────────────
 async function cancelOrder(orderId) {
     if (!confirm(`Cancel order #${orderId}?`)) return;
 
@@ -122,15 +121,14 @@ async function cancelOrder(orderId) {
         }
 
         alert(`Order #${orderId} has been cancelled.`);
-        getProducts();   // stock restored
-        loadOrders();    // refresh order list
+        getProducts();
+        loadOrders();
     } catch (err) {
         console.error("Cancel error:", err);
         alert("Something went wrong cancelling the order.");
     }
 }
 
-// ── Toggle between Products / Orders views ──────────────────────
 function toggleOrders() {
     const productsSection = document.getElementById("products-section");
     const ordersSection = document.getElementById("orders-section");
@@ -148,5 +146,213 @@ function toggleOrders() {
     }
 }
 
-// ── Init ─────────────────────────────────────────────────────────
+
+// ═══════════════════════════════════════════════════════════════════
+//  CHAT WIDGET — Agent Frontend
+// ═══════════════════════════════════════════════════════════════════
+
+// Generate a unique session id per browser tab
+const SESSION_ID = "session-" + Math.random().toString(36).substring(2, 10);
+
+// ── Toggle chat open / close ────────────────────────────────────
+function toggleChat() {
+    const chatWindow = document.getElementById("chat-window");
+    const fabIcon    = document.getElementById("chat-fab-icon");
+    const fabClose   = document.getElementById("chat-fab-close");
+
+    const isOpen = !chatWindow.classList.contains("hidden");
+
+    if (isOpen) {
+        chatWindow.classList.add("hidden");
+        fabIcon.classList.remove("hidden");
+        fabClose.classList.add("hidden");
+    } else {
+        chatWindow.classList.remove("hidden");
+        fabIcon.classList.add("hidden");
+        fabClose.classList.remove("hidden");
+        document.getElementById("chat-input").focus();
+    }
+}
+
+// ── Render a message bubble ─────────────────────────────────────
+function addMessage(text, sender) {
+    // sender: "user" | "bot"
+    const container = document.getElementById("chat-messages");
+    const bubble = document.createElement("div");
+    bubble.className = `chat-bubble ${sender}`;
+
+    // Support basic markdown-like bold (**text**) and newlines
+    const formatted = text
+        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+        .replace(/\n/g, "<br>");
+
+    bubble.innerHTML = formatted;
+    container.appendChild(bubble);
+
+    // Auto-scroll to bottom
+    container.scrollTop = container.scrollHeight;
+}
+
+// ── Show / hide the typing indicator ────────────────────────────
+function showTyping() {
+    const container = document.getElementById("chat-messages");
+    const indicator = document.createElement("div");
+    indicator.className = "chat-bubble bot typing-indicator";
+    indicator.id = "typing-indicator";
+    indicator.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+    container.appendChild(indicator);
+    container.scrollTop = container.scrollHeight;
+}
+
+function hideTyping() {
+    const el = document.getElementById("typing-indicator");
+    if (el) el.remove();
+}
+
+// ── Show / hide the order confirmation bar ──────────────────────
+function showConfirmBar(pendingOrder) {
+    const bar = document.getElementById("chat-confirm-bar");
+    if (pendingOrder) {
+        bar.querySelector("p").textContent =
+            `Confirm: ${pendingOrder.product_name} × ${pendingOrder.quantity} = ₹${pendingOrder.total_price}?`;
+    }
+    bar.classList.remove("hidden");
+    // Disable text input while confirming
+    document.getElementById("chat-input").disabled = true;
+    document.getElementById("chat-send-btn").disabled = true;
+}
+
+function hideConfirmBar() {
+    document.getElementById("chat-confirm-bar").classList.add("hidden");
+    document.getElementById("chat-input").disabled = false;
+    document.getElementById("chat-send-btn").disabled = false;
+}
+
+// ── Send user message to agent ──────────────────────────────────
+async function sendMessage() {
+    const input = document.getElementById("chat-input");
+    const text = input.value.trim();
+    if (!text) return;
+
+    // Show user bubble
+    addMessage(text, "user");
+    input.value = "";
+
+    showTyping();
+
+    try {
+        const response = await fetch(`${API}/agent/chat`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ session_id: SESSION_ID, message: text })
+        });
+
+        hideTyping();
+
+        if (!response.ok) {
+            const err = await response.json();
+            addMessage(`⚠️ Error: ${err.detail || "Something went wrong."}`, "bot");
+            return;
+        }
+
+        const data = await response.json();
+
+        // Show the agent's response
+        addMessage(data.response, "bot");
+
+        // If the agent is asking for order confirmation, show the confirm bar
+        if (data.action === "confirm_order" && data.pending_order) {
+            showConfirmBar(data.pending_order);
+        }
+
+    } catch (err) {
+        hideTyping();
+        console.error("Chat error:", err);
+        addMessage("⚠️ Could not reach the assistant. Is the server running?", "bot");
+    }
+}
+
+// ── Confirm a pending order ─────────────────────────────────────
+async function confirmOrder() {
+    hideConfirmBar();
+    addMessage("✅ Yes, confirm the order!", "user");
+    showTyping();
+
+    try {
+        const response = await fetch(`${API}/agent/confirm`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ session_id: SESSION_ID })
+        });
+
+        hideTyping();
+
+        if (!response.ok) {
+            const err = await response.json();
+            addMessage(`⚠️ Error: ${err.detail || "Confirmation failed."}`, "bot");
+            return;
+        }
+
+        const data = await response.json();
+        addMessage(data.response, "bot");
+
+        // Refresh products & orders since stock changed
+        getProducts();
+        loadOrders();
+
+    } catch (err) {
+        hideTyping();
+        console.error("Confirm error:", err);
+        addMessage("⚠️ Could not confirm the order.", "bot");
+    }
+}
+
+// ── Cancel a pending agent order ────────────────────────────────
+async function cancelAgentOrder() {
+    hideConfirmBar();
+    addMessage("❌ No, cancel it.", "user");
+    showTyping();
+
+    try {
+        const response = await fetch(`${API}/agent/cancel`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ session_id: SESSION_ID })
+        });
+
+        hideTyping();
+
+        if (!response.ok) {
+            const err = await response.json();
+            addMessage(`⚠️ Error: ${err.detail || "Cancellation failed."}`, "bot");
+            return;
+        }
+
+        const data = await response.json();
+        addMessage(data.response, "bot");
+
+    } catch (err) {
+        hideTyping();
+        console.error("Cancel error:", err);
+        addMessage("⚠️ Could not cancel the order.", "bot");
+    }
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════════════
+
 getProducts();
+
+// Inject welcome message into chat
+document.addEventListener("DOMContentLoaded", () => {
+    addMessage(
+        "👋 Hey there! I'm your **My Store** shopping assistant.\n\n" +
+        "I can help you:\n" +
+        "🔍 Browse products & check prices\n" +
+        "🛒 Place orders for you\n\n" +
+        "Just type a message below!",
+        "bot"
+    );
+});
